@@ -8,6 +8,8 @@ import java.sql.*;
 
 import static org.springframework.http.ResponseEntity.status;
 
+import com.example.main.requests.CreateThread;
+
 /**
  * Created by sergeigavrilko on 11.10.16.
  */
@@ -24,7 +26,7 @@ public class threadController {
     private static ResultSet rs;
 
     @RequestMapping(path = "/db/api/thread/create", method = RequestMethod.POST)
-    public ResponseEntity createForum(@RequestBody threadController.CreateThread body){
+    public ResponseEntity createForum(@RequestBody CreateThread body){
 
         String query = "insert into threads VALUES (NULL, \"" + body.getForum() + "\", \"" + body.getTitle() + "\", " +
                 body.isClosed() + ", \"" + body.getUser() + "\", \"" + body.getDate() + "\", \"" + body.getMessage() + "\"" +
@@ -85,65 +87,6 @@ public class threadController {
         return ResponseEntity.ok("{ \"code\": 0, \"response\": { \"date\": \"" + dbDate + "\", \"forum\": \"" +
                 dbForum + "\", \"id\" : \"" + id + "\", \"isClosed\" : \"" + dbIsClosed + "\", \"isDeleted\" : \"" + dbDeleted + "\"" +
                 ", \"message\" : \"" + dbMessage + "\", \"slug\" : \"" + dbSlug + "\", \"title\" : \"" + dbTitle + "\", \"user\" : \"" + dbUser + "\"}}" );
-    }
-
-    private static final class CreateThread {
-        private String forum;
-        private String title;
-        private boolean isClosed;
-        private String user;
-        private String date;
-        private String message;
-        private String slug;
-        private boolean isDeleted;
-
-
-        private CreateThread() {
-        }
-
-
-        public CreateThread(String forum, String title, boolean isClosed, String user, String date, String message, String slug, boolean isDeleted) {
-            this.forum = forum;
-            this.title = title;
-            this.isClosed = isClosed;
-            this.user = user;
-            this.date = date;
-            this.message = message;
-            this.slug = slug;
-            this.isDeleted = isDeleted;
-        }
-
-        public String getForum() {
-            return forum;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public boolean isClosed() {
-            return isClosed;
-        }
-
-        public String getUser() {
-            return user;
-        }
-
-        public String getDate() {
-            return date;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public String getSlug() {
-            return slug;
-        }
-
-        public boolean isDeleted() {
-            return isDeleted;
-        }
     }
 
 }

@@ -1,16 +1,20 @@
 package com.example.main;
 
+import com.example.main.requests.DetailsForum;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.concurrent.atomic.AtomicLong;
+import com.example.main.requests.CreateForum;
+
 
 import static org.springframework.http.ResponseEntity.status;
 
@@ -82,34 +86,15 @@ public class forumController {
                 dbname + "\", \"short_name\" : \"" + dbshort_name + "\", \"user\" : \"" + dbuser + "\"}}" );
     }
 
-    private static final class CreateForum{
-        private String name;
-        private String short_name;
-        private String user;
 
-        private CreateForum(){
-        }
+    @RequestMapping(path = "/db/api/forum/details", method = RequestMethod.GET)
+    public ResponseEntity detailsForum(@RequestBody DetailsForum body) {
+        final String forum = body.getForum();
+        final Array related = body.getRelated();
 
-        private CreateForum(String name, String short_name, String user){
-            this.name = name;
-            this.short_name = short_name;
-            this.user = user;
-        }
-
-
-        public String getName() {
-            return name;
-        }
-
-        public String getShort_name() {
-            return short_name;
-        }
-
-        public String getUser() {
-            return user;
-        }
+        String query = "select * from Forums join Users on Forums.user = Users.email where short_name = " + forum + ");";
+        return ResponseEntity.ok("{}" );
     }
-
 }
 
 

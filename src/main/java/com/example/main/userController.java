@@ -1,5 +1,6 @@
 package com.example.main;
 
+import com.example.main.requests.CreateUser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class userController {
     private static ResultSet rs;
 
     @RequestMapping(path = "/db/api/user/create", method = RequestMethod.POST)
-    public ResponseEntity createForum(@RequestBody userController.CreateUser body){
+    public ResponseEntity createForum(@RequestBody CreateUser body){
 
         String query = "insert into users VALUES (NULL, \"" + body.getUsername() + "\", \"" + body.getAbout() + "\", " +
                 body.getIsAnonymous() + ", \"" + body.getName() + "\", \"" + body.getEmail() + "\")";
@@ -78,44 +79,4 @@ public class userController {
                 dbEmail + "\", \"id\" : \"" + id + "\", \"isAnonymous\" : \"" + dbIsAnonymous + "\", \"name\" : \"" + dbName + "\"" +
                 ", \"username\" : \"" + dbUsername + "\"}}" );
     }
-
-    private static final class CreateUser{
-        private String username;
-        private String about;
-        private boolean isAnonymous;
-        private String name;
-        private String email;
-
-        private CreateUser(){
-        }
-
-        public CreateUser(String username, String about, boolean isAnonymous, String name, String email) {
-            this.username = username;
-            this.about = about;
-            this.isAnonymous = isAnonymous;
-            this.name = name;
-            this.email = email;
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public String getAbout() {
-            return about;
-        }
-
-        public boolean getIsAnonymous() {
-            return isAnonymous;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-    }
-
 }

@@ -11,6 +11,8 @@ import java.text.SimpleDateFormat;
 
 import static org.springframework.http.ResponseEntity.status;
 
+import com.example.main.requests.CreatePost;
+
 /**
  * Created by sergeigavrilko on 10.10.16.
  */
@@ -27,11 +29,11 @@ public class postController {
     private static ResultSet rs;
 
     @RequestMapping(path = "/db/api/post/create", method = RequestMethod.POST)
-    public ResponseEntity createForum(@RequestBody postController.CreatePost body){
+    public ResponseEntity createForum(@RequestBody CreatePost body){
 
         String query = "insert into posts VALUES (NULL, " + body.getIsApproved() + ", \"" + body.getUser() + "\", \"" +
                 body.getDate() + "\", \"" + body.getMessage() + "\", " + body.getIsSpam() + ", " + body.getIsHighlighted() + ", " + body.getThread() + ", \"" + body.getForum() + "\"," +
-                "" + body.isDeleted + ", " + body.isEdited + ")";
+                "" + body.getIsDeleted() + ", " + body.getIsEdited() + ")";
 
         try {
             con = DriverManager.getConnection(url, username, password);
@@ -92,78 +94,5 @@ public class postController {
                 ", \"isEdited\" : \"" + isEdited + "\" , \"isHighlighted\" : \"" + isHighlighted + "\" , \"isSpam\" : \"" + isSpam + "\"" +
                 ", \"message\" : \"" + message + "\" , \"parent\" : \"" + null + "\" , \"thread\" : \"" + thread + "\"" +
                 ", \"user\" : \"" + user + "\"}}" );
-    }
-
-    private static final class CreatePost{
-
-        private boolean isApproved;
-        private String user;
-        private String date;
-        private String message;
-        private boolean isSpam;
-        private boolean isHighlighted;
-        private Integer thread;
-        private String forum;
-        private boolean isDeleted;
-        private boolean isEdited;
-
-
-
-        private CreatePost(){
-        }
-
-        public CreatePost(boolean isApproved, String user, String date, String message, boolean isSpam, boolean isHighlighted, Integer thread, String forum, boolean isDeleted, boolean isEdited) throws ParseException {
-            this.isApproved = isApproved;
-            this.user = user;
-            this.date = date;
-            this.message = message;
-            this.isSpam = isSpam;
-            this.isHighlighted = isHighlighted;
-            this.thread = thread;
-            this.forum = forum;
-            this.isDeleted = isDeleted;
-            this.isEdited = isEdited;
-        }
-
-
-        public boolean getIsApproved() {
-            return isApproved;
-        }
-
-        public String getUser() {
-            return user;
-        }
-
-        public String getDate() {
-            return date;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public boolean getIsSpam() {
-            return isSpam;
-        }
-
-        public boolean getIsHighlighted() {
-            return isHighlighted;
-        }
-
-        public Integer getThread() {
-            return thread;
-        }
-
-        public String getForum() {
-            return forum;
-        }
-
-        public boolean getIsDeleted() {
-            return isDeleted;
-        }
-
-        public boolean getIsEdited() {
-            return isEdited;
-        }
     }
 }
