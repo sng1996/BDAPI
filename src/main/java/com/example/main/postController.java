@@ -101,7 +101,7 @@ public class postController {
     }
 
     @RequestMapping(path = "/db/api/post/details", method = RequestMethod.GET)
-    public ResponseEntity detailsForum(@RequestParam("post") Integer id,
+    public ResponseEntity detailsPost(@RequestParam("post") Integer id,
                                        @RequestParam(value = "related", required = false) ArrayList related) {
 
         String joinUserTable = "";
@@ -232,6 +232,86 @@ public class postController {
         }
 
         response = response + "}"; //запятую поставить между постами
+        return ResponseEntity.ok(response);
+    }
+
+    @RequestMapping(path = "/db/api/post/list", method = RequestMethod.GET)
+    public ResponseEntity listPost(@RequestParam(value = "since", required = false) String since,
+                                         @RequestParam(value = "limit", required = false) Integer limit,
+                                         @RequestParam(value = "order", required = false, defaultValue = "desc") String order,
+                                         @RequestParam(value = "thread", required = false) Integer thread,
+                                         @RequestParam(value = "forum", required = false) String forum) {
+
+
+        String strSince = "";
+        String strLimit = "";
+        String query1 = "";
+
+        if (since != null)
+            strSince = "and Posts.date > \'" + since + "\'";
+        if (limit != null)
+            strLimit = " LIMIT " + limit;
+
+        if (thread != null){
+            query1 = " Posts.thread = " + thread + " ";
+        }
+        else{
+            query1 = " Posts.forum = \'" + forum + "\' ";
+        }
+
+        String query = "select * from Posts where " + query1 + strSince + " ORDER BY Posts.date " + order + strLimit + ";";
+
+        CreatePost postObj = new CreatePost();
+        String userResponse = "";
+        String forumResponse = "";
+        String threadResponse = "";
+        String response = "{" +
+                "\"code\": 0," +
+                "\"response\": [ ";
+
+        try {
+            con = DriverManager.getConnection(url, username, password);
+            stmt = con.createStatement();
+            rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                postObj.setId(rs.getInt(1));
+                postObj.setApproved(rs.getBoolean(2));
+                postObj.setUser(rs.getString(3));
+                postObj.setTmpDate(rs.getTimestamp(4));
+                postObj.setMessage(rs.getString(5));
+                postObj.setSpam(rs.getBoolean(6));
+                postObj.setHighlighted(rs.getBoolean(7));
+                postObj.setThread(rs.getInt(8));
+                postObj.setForum(rs.getString(9));
+                postObj.setDeleted(rs.getBoolean(10));
+                postObj.setEdited(rs.getBoolean(11));
+                postObj.setDislikes(rs.getInt(12));
+                postObj.setLikes(rs.getInt(13));
+                postObj.setParent(rs.getInt(14));
+                postObj.setPoitns(rs.getInt(15));
+                userResponse = postObj.getUser();
+                forumResponse = postObj.getForum();
+                threadResponse = Integer.toString(postObj.getThread());
+
+                response = response + "{ \"date\": \"" + postObj.getDate() + "\", \"dislikes\": \"" +
+                        postObj.getDislikes() + "\", \"forum\": \"" +
+                        forumResponse + "\", \"id\" : \"" + postObj.getId() + "\", \"isApproved\" : \"" + postObj.getIsApproved() + "\" , \"isDeleted\" : \"" + postObj.getIsDeleted() + "\"" +
+                        ", \"isEdited\" : \"" + postObj.getIsEdited() + "\" , \"isHighlighted\" : \"" + postObj.getIsHighlighted() + "\" , \"isSpam\" : \"" + postObj.getIsSpam() + "\" , \"likes\" : \"" + postObj.getLikes() + "\"" +
+                        ", \"message\" : \"" + postObj.getMessage() + "\" , \"parent\" : \"" + postObj.getParent() + "\" , \"points\" : \"" + postObj.getPoitns() + "\" , \"thread\" : \"" + threadResponse + "\"" +
+                        ", \"user\" : \"" + userResponse + "\"} ";
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException se) { /*can't do anything */ }
+            try {
+                stmt.close();
+            } catch (SQLException se) { /*can't do anything */ }
+        }
+
+        response = response + "] }"; //запятую поставить между постами
         return ResponseEntity.ok(response);
     }
 }
