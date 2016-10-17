@@ -1,8 +1,6 @@
 package com.example.main;
 
-import com.example.main.requests.CreateForum;
-import com.example.main.requests.CreateThread;
-import com.example.main.requests.CreateUser;
+import com.example.main.requests.*;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +12,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import static org.springframework.http.ResponseEntity.status;
-
-import com.example.main.requests.CreatePost;
 
 /**
  * Created by sergeigavrilko on 10.10.16.
@@ -313,5 +309,51 @@ public class postController {
 
         response = response + "] }"; //запятую поставить между постами
         return ResponseEntity.ok(response);
+    }
+
+    @RequestMapping(path = "/db/api/post/remove", method = RequestMethod.POST)
+    public ResponseEntity removePost(@RequestBody RemovePost post){
+
+        int id = post.getPost();
+
+        String query = "update posts set isDeleted = true where id = " + id + ";";
+        try {
+            con = DriverManager.getConnection(url, username, password);
+            stmt = con.createStatement();
+            stmt.executeUpdate(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException se) { /*can't do anything */ }
+            try {
+                stmt.close();
+            } catch (SQLException se) { /*can't do anything */ }
+        }
+        return ResponseEntity.ok("{\"code\": 0,\"response\": { \"post\": " + id + "} }");
+    }
+
+    @RequestMapping(path = "/db/api/post/restore", method = RequestMethod.POST)
+    public ResponseEntity restorePost(@RequestBody RemovePost post){
+
+        int id = post.getPost();
+
+        String query = "update posts set isDeleted = false where id = " + id + ";";
+        try {
+            con = DriverManager.getConnection(url, username, password);
+            stmt = con.createStatement();
+            stmt.executeUpdate(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException se) { /*can't do anything */ }
+            try {
+                stmt.close();
+            } catch (SQLException se) { /*can't do anything */ }
+        }
+        return ResponseEntity.ok("{\"code\": 0,\"response\": { \"post\": " + id + "} }");
     }
 }
