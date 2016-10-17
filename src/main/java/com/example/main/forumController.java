@@ -161,9 +161,9 @@ public class forumController {
 
     @RequestMapping(path = "/db/api/forum/listPosts", method = RequestMethod.GET)
     public ResponseEntity listPostsForum(@RequestParam(value = "since", required = false) String since,
-                                       @RequestParam(value = "limit", required = false) Integer limit,
-                                       @RequestParam(value = "order", required = false, defaultValue = "desc") String order,
-                                       @RequestParam(value = "related", required = false) ArrayList related,
+                                         @RequestParam(value = "limit", required = false) Integer limit,
+                                         @RequestParam(value = "order", required = false, defaultValue = "desc") String order,
+                                         @RequestParam(value = "related", required = false) ArrayList related,
                                          @RequestParam("forum") String forum) {
 
         String joinUserTable = "";
@@ -199,7 +199,7 @@ public class forumController {
         if (since != null)
             strSince = "and Posts.date > \'" + since + "\'";
         if (limit != null)
-            strLimit =  " LIMIT " + limit;
+            strLimit = " LIMIT " + limit;
 
         String query = "select * from Posts " + joinUserTable + joinForumTable + joinThreadTable + " where Posts.forum = \'" + forum + "\' " + strSince + " ORDER BY Posts.date " + order + strLimit + ";";
 
@@ -219,7 +219,7 @@ public class forumController {
             con = DriverManager.getConnection(url, username, password);
             stmt = con.createStatement();
             rs = stmt.executeQuery(query);
-            while(rs.next()) {
+            while (rs.next()) {
                 postObj.setId(rs.getInt(1));
                 postObj.setApproved(rs.getBoolean(2));
                 postObj.setUser(rs.getString(3));
@@ -260,7 +260,7 @@ public class forumController {
                             forumObj.getName() + "\", \"short_name\" : \"" + forumObj.getShort_name() + "\", \"user\" : \"" + forumObj.getName() + "\"}";
                     count += 4;
                 }
-                if (isThread){
+                if (isThread) {
                     threadObj.setId(rs.getInt(16 + count));
                     threadObj.setForum(rs.getString(17 + count));
                     threadObj.setTitle(rs.getString(18 + count));
@@ -301,6 +301,169 @@ public class forumController {
             } catch (SQLException se) { /*can't do anything */ }
         }
 
+        response = response + "] }"; //запятую поставить между постами
+        return ResponseEntity.ok(response);
+    }
+
+
+    @RequestMapping(path = "/db/api/forum/listThreads", method = RequestMethod.GET)
+    public ResponseEntity listThreadsForum(@RequestParam(value = "since", required = false) String since,
+                                           @RequestParam(value = "limit", required = false) Integer limit,
+                                           @RequestParam(value = "order", required = false, defaultValue = "desc") String order,
+                                           @RequestParam(value = "related", required = false) ArrayList related,
+                                           @RequestParam("forum") String forum) {
+
+        String joinUserTable = "";
+        String joinForumTable = "";
+        boolean isUser = false;
+        boolean isForum = false;
+
+        if (related != null) {
+            for (int i = 0; i < related.size(); i++) {
+                if (related.get(i).equals("user")) {
+                    joinUserTable = "join Users on Threads.user = Users.email ";
+                    isUser = true;
+                    break;
+                }
+                if (related.get(i).equals("forum")) {
+                    joinForumTable = "join Forums on Forums.short_name = Threads.forum ";
+                    isForum = true;
+                    break;
+                }
+            }
+        }
+
+        String strSince = "";
+        String strLimit = "";
+
+        if (since != null)
+            strSince = "and Threads.date > \'" + since + "\'";
+        if (limit != null)
+            strLimit = " LIMIT " + limit;
+
+        String query = "select * from threads " + joinUserTable + joinForumTable + " where Threads.forum = \'" + forum + "\' " + strSince + " ORDER BY Threads.date " + order + strLimit + ";";
+
+        CreateForum forumObj = new CreateForum();
+        CreateThread threadObj = new CreateThread();
+        CreateUser userObj = new CreateUser();
+        String userResponse = "";
+        String forumResponse = "";
+
+        String response = "{" +
+                "\"code\": 0," +
+                "\"response\": [ ";
+        int count = 0;
+
+        try {
+            con = DriverManager.getConnection(url, username, password);
+            stmt = con.createStatement();
+            rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                threadObj.setId(rs.getInt(1));
+                threadObj.setForum(rs.getString(2));
+                threadObj.setTitle(rs.getString(3));
+                threadObj.setClosed(rs.getBoolean(4));
+                threadObj.setUser(rs.getString(5));
+                threadObj.setTmpDate(rs.getTimestamp(6));
+                threadObj.setMessage(rs.getString(7));
+                threadObj.setSlug(rs.getString(8));
+                threadObj.setDeleted(rs.getBoolean(9));
+                threadObj.setDislikes(rs.getInt(10));
+                threadObj.setLikes(rs.getInt(11));
+                threadObj.setPoints(rs.getInt(12));
+                threadObj.setPosts(rs.getInt(13));
+                userResponse = threadObj.getUser();
+                forumResponse = threadObj.getForum();
+                count = 0;
+                if (isUser) {
+                    userObj.setId(rs.getInt(14));
+                    userObj.setUsername(rs.getString(15));
+                    userObj.setAbout(rs.getString(16));
+                    userObj.setAnonymous(rs.getBoolean(17));
+                    userObj.setName(rs.getString(18));
+                    userObj.setEmail(rs.getString(19));
+                    userResponse = "{\"about\": \"" + userObj.getAbout() + "\", \"email\": \"" + userObj.getEmail() + "\", \"followers\" : [], \"following\" : [], \"id\" : " + userObj.getId() + ", \"isAnonymous\" : " + userObj.getIsAnonymous() + ", \"name\" : \"" + userObj.getName() + "\"" +
+                            ", \"subscriptions\" : [], \"username\" : \"" + userObj.getUsername() + "\"}";
+                    count = 6;
+                }
+                if (isForum) {
+                    forumObj.setId(rs.getInt(14 + count));
+                    forumObj.setName(rs.getString(15 + count));
+                    forumObj.setShort_name(rs.getString(16 + count));
+                    forumObj.setUser((rs.getString(17 + count)));
+                    forumResponse = "{ \"id\": " + forumObj.getId() + ", \"name\": \"" +
+                            forumObj.getName() + "\", \"short_name\" : \"" + forumObj.getShort_name() + "\", \"user\" : \"" + forumObj.getName() + "\"}";
+                }
+                response = response + "{ \"date\": \"" + threadObj.getDate() + "\", \"dislikes\": \"" +
+                        threadObj.getDislikes() + "\", \"forum\": \"" +
+                        forumResponse + "\", \"id\" : \"" + threadObj.getId() + "\", \"isClosed\" : \"" + threadObj.isClosed() + "\", \"isDeleted\" : \"" + threadObj.isDeleted() + "\", \"likes\": \"" +
+                        threadObj.getLikes() + "\", " +
+                        "\"message\" : \"" + threadObj.getMessage() + "\", \"points\": " +
+                        threadObj.getPoints() + ", \"posts\": " +
+                        threadObj.getPosts() + ", \"slug\" : \"" + threadObj.getSlug() + "\", \"title\" : \"" + threadObj.getTitle() + "\", \"user\" : \"" + userResponse + "\"}";
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException se) { /*can't do anything */ }
+            try {
+                stmt.close();
+            } catch (SQLException se) { /*can't do anything */ }
+        }
+        response = response + "] }"; //запятую поставить между постами
+        return ResponseEntity.ok(response);
+    }
+
+    @RequestMapping(path = "/db/api/forum/listUsers", method = RequestMethod.GET)
+    public ResponseEntity listUsersForum(@RequestParam(value = "since_id", required = false) Integer since_id,
+                                         @RequestParam(value = "max_id", required = false) Integer max_id,
+                                         @RequestParam(value = "limit", required = false) Integer limit,
+                                         @RequestParam(value = "order", required = false, defaultValue = "desc") String order,
+                                         @RequestParam("forum") String forum) {
+
+        String strLimit = "";
+        String strSince = "";
+
+        if (since_id != null && max_id != null){
+            strSince = " and Users.id >= " + since_id + " and Users.id <= " + max_id;
+        }
+
+        if (limit != null)
+            strLimit = " LIMIT " + limit;
+
+        String query = "Select Users.id, username, about, Users.isAnonymous, Users.name, email from Forums join Posts on Forums.short_name = Posts.forum join Users on Posts.user = Users.email where forums.short_name = \"" + forum + "\" " + strSince + " order by Users.name " + strLimit + ";";
+
+        CreateUser userObj = new CreateUser();
+
+        String response = "{" +
+                "\"code\": 0," +
+                "\"response\": [ ";
+        try {
+            con = DriverManager.getConnection(url, username, password);
+            stmt = con.createStatement();
+            rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                userObj.setId(rs.getInt(1));
+                userObj.setUsername(rs.getString(2));
+                userObj.setAbout(rs.getString(3));
+                userObj.setAnonymous(rs.getBoolean(4));
+                userObj.setName(rs.getString(5));
+                userObj.setEmail(rs.getString(6));
+                response = response + "{\"about\": \"" + userObj.getAbout() + "\", \"email\": \"" + userObj.getEmail() + "\", \"followers\" : [], \"following\" : [], \"id\" : " + userObj.getId() + ", \"isAnonymous\" : " + userObj.getIsAnonymous() + ", \"name\" : \"" + userObj.getName() + "\"" +
+                        ", \"subscriptions\" : [], \"username\" : \"" + userObj.getUsername() + "\"}";
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException se) { /*can't do anything */ }
+            try {
+                stmt.close();
+            } catch (SQLException se) { /*can't do anything */ }
+        }
         response = response + "] }"; //запятую поставить между постами
         return ResponseEntity.ok(response);
     }
