@@ -1,5 +1,7 @@
 package com.example.main.requests;
 
+import java.sql.Timestamp;
+
 /**
  * Created by sergeigavrilko on 11.10.16.
  */
@@ -7,6 +9,7 @@ public final class CreatePost{
 
     private boolean isApproved;
     private String user;
+    private Timestamp tmpDate;
     private String date;
     private String message;
     private boolean isSpam;
@@ -15,10 +18,15 @@ public final class CreatePost{
     private String forum;
     private boolean isDeleted;
     private boolean isEdited;
+    private int dislikes;
+    private int likes;
+    private int parent;
+    private int poitns;
+    private int id;
 
 
 
-    private CreatePost(){
+    public CreatePost(){
     }
 
     public CreatePost(boolean isApproved, String user, String date, String message, boolean isSpam, boolean isHighlighted, Integer thread, String forum, boolean isDeleted, boolean isEdited){
@@ -47,6 +55,10 @@ public final class CreatePost{
         return date;
     }
 
+    public Timestamp getTmpDate() {
+        return tmpDate;
+    }
+
     public String getMessage() {
         return message;
     }
@@ -73,5 +85,81 @@ public final class CreatePost{
 
     public boolean getIsEdited() {
         return isEdited;
+    }
+
+    public int getDislikes() {return dislikes;}
+
+    public int getLikes() {return likes;}
+
+    public int getParent() {return parent;}
+
+    public int getPoitns() {return poitns;}
+
+    public void setApproved(boolean approved) {
+        isApproved = approved;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public void setSpam(boolean spam) {
+        isSpam = spam;
+    }
+
+    public void setHighlighted(boolean highlighted) {
+        isHighlighted = highlighted;
+    }
+
+    public void setThread(Integer thread) {
+        this.thread = thread;
+    }
+
+    public void setForum(String forum) {
+        this.forum = forum;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
+    }
+
+    public void setEdited(boolean edited) {
+        isEdited = edited;
+    }
+
+    public void setDislikes(int dislikes) {
+        this.dislikes = dislikes;
+    }
+
+    public void setLikes(int likes) {
+        this.likes = likes;
+    }
+
+    public void setParent(int parent) {
+        this.parent = parent;
+    }
+
+    public void setPoitns(int poitns) {
+        this.poitns = poitns;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setTmpDate(Timestamp tmpDate) {
+        this.tmpDate = tmpDate;
     }
 }

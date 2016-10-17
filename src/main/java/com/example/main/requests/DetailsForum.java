@@ -7,13 +7,13 @@ import java.lang.reflect.Array;
  */
 public class DetailsForum {
     private String forum;
-    private Array related;
+    private String[] related = new String[1];
 
 
     public DetailsForum() {
     }
 
-    public DetailsForum(String forum, Array related) {
+    public DetailsForum(String forum, String[] related) {
         this.forum = forum;
         this.related = related;
     }
@@ -22,7 +22,7 @@ public class DetailsForum {
         return forum;
     }
 
-    public Array getRelated() {
+    public String[] getRelated() {
         return related;
     }
 }

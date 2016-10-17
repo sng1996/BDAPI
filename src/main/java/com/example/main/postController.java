@@ -33,7 +33,7 @@ public class postController {
 
         String query = "insert into posts VALUES (NULL, " + body.getIsApproved() + ", \"" + body.getUser() + "\", \"" +
                 body.getDate() + "\", \"" + body.getMessage() + "\", " + body.getIsSpam() + ", " + body.getIsHighlighted() + ", " + body.getThread() + ", \"" + body.getForum() + "\"," +
-                "" + body.getIsDeleted() + ", " + body.getIsEdited() + ")";
+                "" + body.getIsDeleted() + ", " + body.getIsEdited() + ", NULL, NULL, NULL, NULL)";
 
         try {
             con = DriverManager.getConnection(url, username, password);

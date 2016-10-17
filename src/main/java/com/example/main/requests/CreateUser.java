@@ -9,8 +9,13 @@ public final class CreateUser{
     private boolean isAnonymous;
     private String name;
     private String email;
+    private int id;
 
-    private CreateUser(){
+    public CreateUser(){
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public CreateUser(String username, String about, boolean isAnonymous, String name, String email) {
@@ -39,6 +44,30 @@ public final class CreateUser{
 
     public String getEmail() {
         return email;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setAbout(String about) {
+        this.about = about;
+    }
+
+    public void setAnonymous(boolean anonymous) {
+        isAnonymous = anonymous;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public int getId() {
+        return id;
     }
 }
 

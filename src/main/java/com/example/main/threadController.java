@@ -31,7 +31,7 @@ public class threadController {
         String query = "insert into threads VALUES (NULL, \"" + body.getForum() + "\", \"" + body.getTitle() + "\", " +
                 body.isClosed() + ", \"" + body.getUser() + "\", \"" + body.getDate() + "\", \"" + body.getMessage() + "\"" +
                 ", \"" + body.getSlug() + "\"" +
-                ", " + body.isDeleted() + ")";
+                ", " + body.isDeleted() + ", NULL, NULL, NULL, NULL)";
 
         try {
             con = DriverManager.getConnection(url, username, password);
