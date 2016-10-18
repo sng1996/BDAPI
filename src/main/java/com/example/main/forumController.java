@@ -467,6 +467,9 @@ public class forumController {
         response = response + "] }"; //запятую поставить между постами
         return ResponseEntity.ok(response);
     }
+
+
+
 }
 
 
