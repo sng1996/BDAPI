@@ -432,4 +432,87 @@ public class postController {
 
         return ResponseEntity.ok(response);
     }
+
+    @RequestMapping(path = "/db/api/post/vote", method = RequestMethod.POST)
+    public ResponseEntity votePost(@RequestBody VotePost post){
+
+        int id = post.getPost();
+        int vote = post.getVote();
+
+        String query = "";
+
+        if (vote > 0)
+            query = "update posts set likes = likes + 1, points = likes - dislikes where id = " + id + ";";
+        else
+            query = "update posts set dislikes = dislikes + 1, points = likes - dislikes where id = " + id + ";";
+
+
+        try {
+            con = DriverManager.getConnection(url, username, password);
+            stmt = con.createStatement();
+            stmt.executeUpdate(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException se) { /*can't do anything */ }
+            try {
+                stmt.close();
+            } catch (SQLException se) { /*can't do anything */ }
+        }
+
+        CreatePost postObj = new CreatePost();
+        String userResponse = "";
+        String forumResponse = "";
+        String threadResponse = "";
+        String response = "{" +
+                "\"code\": 0," +
+                "\"response\": ";
+
+        query = "select * from posts where id = " + id + ";";
+
+        try {
+            con = DriverManager.getConnection(url, username, password);
+            stmt = con.createStatement();
+            rs = stmt.executeQuery(query);
+            rs.next();
+            postObj.setId(rs.getInt(1));
+            postObj.setApproved(rs.getBoolean(2));
+            postObj.setUser(rs.getString(3));
+            postObj.setTmpDate(rs.getTimestamp(4));
+            postObj.setMessage(rs.getString(5));
+            postObj.setSpam(rs.getBoolean(6));
+            postObj.setHighlighted(rs.getBoolean(7));
+            postObj.setThread(rs.getInt(8));
+            postObj.setForum(rs.getString(9));
+            postObj.setDeleted(rs.getBoolean(10));
+            postObj.setEdited(rs.getBoolean(11));
+            postObj.setDislikes(rs.getInt(12));
+            postObj.setLikes(rs.getInt(13));
+            postObj.setParent(rs.getInt(14));
+            postObj.setPoitns(rs.getInt(15));
+            userResponse = postObj.getUser();
+            forumResponse = postObj.getForum();
+            threadResponse = Integer.toString(postObj.getThread());
+
+            response = response + "{ \"date\": \"" + postObj.getDate() + "\", \"dislikes\": \"" +
+                    postObj.getDislikes() + "\", \"forum\": \"" +
+                    forumResponse + "\", \"id\" : \"" + postObj.getId() + "\", \"isApproved\" : \"" + postObj.getIsApproved() + "\" , \"isDeleted\" : \"" + postObj.getIsDeleted() + "\"" +
+                    ", \"isEdited\" : \"" + postObj.getIsEdited() + "\" , \"isHighlighted\" : \"" + postObj.getIsHighlighted() + "\" , \"isSpam\" : \"" + postObj.getIsSpam() + "\" , \"likes\" : \"" + postObj.getLikes() + "\"" +
+                    ", \"message\" : \"" + postObj.getMessage() + "\" , \"parent\" : \"" + postObj.getParent() + "\" , \"points\" : \"" + postObj.getPoitns() + "\" , \"thread\" : \"" + threadResponse + "\"" +
+                    ", \"user\" : \"" + userResponse + "\"} ";
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException se) { /*can't do anything */ }
+            try {
+                stmt.close();
+            } catch (SQLException se) { /*can't do anything */ }
+        }
+
+        return ResponseEntity.ok(response);
+    }
 }
