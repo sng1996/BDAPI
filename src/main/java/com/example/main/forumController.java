@@ -178,17 +178,17 @@ public class forumController {
                 if (related.get(i).equals("user")) {
                     joinUserTable = "join Users on Posts.user = Users.email ";
                     isUser = true;
-                    break;
+                    continue;
                 }
                 if (related.get(i).equals("forum")) {
                     joinForumTable = "join Forums on Forums.short_name = Posts.forum ";
                     isForum = true;
-                    break;
+                    continue;
                 }
                 if (related.get(i).equals("thread")) {
                     joinThreadTable = "join Threads on Threads.forum = Posts.forum ";
                     isThread = true;
-                    break;
+                    continue;
                 }
             }
         }
@@ -323,12 +323,12 @@ public class forumController {
                 if (related.get(i).equals("user")) {
                     joinUserTable = "join Users on Threads.user = Users.email ";
                     isUser = true;
-                    break;
+                    continue;
                 }
                 if (related.get(i).equals("forum")) {
                     joinForumTable = "join Forums on Forums.short_name = Threads.forum ";
                     isForum = true;
-                    break;
+                    continue;
                 }
             }
         }
