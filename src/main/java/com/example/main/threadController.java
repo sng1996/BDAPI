@@ -1,5 +1,7 @@
 package com.example.main;
 
+import com.example.main.requests.CloseThread;
+import com.example.main.requests.RemovePost;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -89,4 +91,26 @@ public class threadController {
                 ", \"message\" : \"" + dbMessage + "\", \"slug\" : \"" + dbSlug + "\", \"title\" : \"" + dbTitle + "\", \"user\" : \"" + dbUser + "\"}}" );
     }
 
+    @RequestMapping(path = "/db/api/thread/close", method = RequestMethod.POST)
+    public ResponseEntity closeThread(@RequestBody CloseThread thread){
+
+        int id = thread.getId();
+
+        String query = "update threads set isClosed = true where id = " + id + ";";
+        try {
+            con = DriverManager.getConnection(url, username, password);
+            stmt = con.createStatement();
+            stmt.executeUpdate(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException se) { /*can't do anything */ }
+            try {
+                stmt.close();
+            } catch (SQLException se) { /*can't do anything */ }
+        }
+        return ResponseEntity.ok("{\"code\": 0,\"response\": { \"thread\": " + id + "} }");
+    }
 }
