@@ -113,7 +113,7 @@ public class threadController {
     }
 
     @RequestMapping(path = "/db/api/thread/details", method = RequestMethod.GET)
-    public ResponseEntity detailsPost(@RequestParam("thread") Integer id,
+    public ResponseEntity detailsThread(@RequestParam("thread") Integer id,
                                       @RequestParam(value = "related", required = false) ArrayList related) {
 
         String joinUserTable = "";
@@ -210,6 +210,85 @@ public class threadController {
         response = response + threadResponse;
         response = response + "}"; //запятую поставить между постами
 
+        return ResponseEntity.ok(response);
+    }
+
+    @RequestMapping(path = "/db/api/thread/list", method = RequestMethod.GET)
+    public ResponseEntity listThread(@RequestParam(value = "since", required = false) String since,
+                                   @RequestParam(value = "limit", required = false) Integer limit,
+                                   @RequestParam(value = "order", required = false, defaultValue = "desc") String order,
+                                   @RequestParam(value = "user", required = false) String user,
+                                   @RequestParam(value = "forum", required = false) String forum) {
+
+
+        String strSince = "";
+        String strLimit = "";
+        String query1 = "";
+
+        if (since != null)
+            strSince = "and Threads.date > \'" + since + "\'";
+        if (limit != null)
+            strLimit = " LIMIT " + limit;
+
+        if (user != null){
+            query1 = " Threads.user = " + user + " ";
+        }
+        else{
+            query1 = " Threads.forum = \'" + forum + "\' ";
+        }
+
+        String query = "select * from Threads where " + query1 + strSince + " ORDER BY Threads.date " + order + strLimit + ";";
+
+        CreateThread threadObj = new CreateThread();
+        String userResponse = "";
+        String forumResponse = "";
+        String threadResponse = "";
+        String response = "{" +
+                "\"code\": 0," +
+                "\"response\": [ ";
+
+        try {
+            con = DriverManager.getConnection(url, username, password);
+            stmt = con.createStatement();
+            rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                threadObj.setId(rs.getInt(1));
+                threadObj.setForum(rs.getString(2));
+                threadObj.setTitle(rs.getString(3));
+                threadObj.setClosed(rs.getBoolean(4));
+                threadObj.setUser(rs.getString(5));
+                threadObj.setTmpDate(rs.getTimestamp(6));
+                threadObj.setMessage(rs.getString(7));
+                threadObj.setSlug(rs.getString(8));
+                threadObj.setDeleted(rs.getBoolean(9));
+                threadObj.setDislikes(rs.getInt(10));
+                threadObj.setLikes(rs.getInt(11));
+                threadObj.setPoints(rs.getInt(12));
+                threadObj.setPosts(rs.getInt(13));
+                userResponse = threadObj.getUser();
+                forumResponse = threadObj.getForum();
+
+                response = response + "{ \"date\": \"" + threadObj.getDate() + "\", \"dislikes\": \"" +
+                        threadObj.getDislikes() + "\", \"forum\": \"" +
+                        forumResponse + "\", \"id\" : \"" + threadObj.getId() + "\", \"isClosed\" : " + threadObj.isClosed() + ", \"isDeleted\" : " + threadObj.isDeleted() + ", \"likes\": \"" +
+                        threadObj.getLikes() + "\", " +
+                        " \"message\" : \"" + threadObj.getMessage() + "\", \"points\": " +
+                        threadObj.getPoints() + ", \"posts\": " +
+                        threadObj.getPosts() + ", \"slug\" : \"" + threadObj.getSlug() + "\", \"title\" : \"" + threadObj.getTitle() + "\", \"user\" : \"" + userResponse + "\"}";
+
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException se) { /*can't do anything */ }
+            try {
+                stmt.close();
+            } catch (SQLException se) { /*can't do anything */ }
+        }
+
+        response = response + "] }"; //запятую поставить между постами
         return ResponseEntity.ok(response);
     }
 }
