@@ -2,6 +2,7 @@ package com.example.main;
 
 import com.example.main.requests.CreateUser;
 import com.example.main.requests.FollowUser;
+import com.example.main.requests.UpdateUser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -187,15 +188,15 @@ public class userController {
 
     @RequestMapping(path = "/db/api/user/listFollowers", method = RequestMethod.GET)
     public ResponseEntity listFollowersUser(@RequestParam(value = "since_id", required = false) Integer since_id,
-                                         @RequestParam(value = "max_id", required = false) Integer max_id,
-                                         @RequestParam(value = "limit", required = false) Integer limit,
-                                         @RequestParam(value = "order", required = false, defaultValue = "desc") String order,
-                                         @RequestParam("user") String user) {
+                                            @RequestParam(value = "max_id", required = false) Integer max_id,
+                                            @RequestParam(value = "limit", required = false) Integer limit,
+                                            @RequestParam(value = "order", required = false, defaultValue = "desc") String order,
+                                            @RequestParam("user") String user) {
 
         String strLimit = "";
         String strSince = "";
 
-        if (since_id != null && max_id != null){
+        if (since_id != null && max_id != null) {
             strSince = " and Users.id >= " + since_id + " and Users.id <= " + max_id;
         }
 
@@ -224,12 +225,12 @@ public class userController {
                 userObj.setEmail(rs.getString(9));
                 String queryFollower = "select follower from Follows where followee = \"" + userObj.getEmail() + "\"";
                 rsFollower = con.createStatement().executeQuery(queryFollower);
-                while(rsFollower.next()){
+                while (rsFollower.next()) {
                     followers.add(rsFollower.getString(1));
                 }
                 String queryFollowee = "select followee from Follows where follower = \"" + userObj.getEmail() + "\"";
                 rsFollowee = con.createStatement().executeQuery(queryFollowee);
-                while(rsFollowee.next()){
+                while (rsFollowee.next()) {
                     followees.add(rsFollowee.getString(1));
                 }
                 response = response + "{\"about\": \"" + userObj.getAbout() + "\", \"email\": \"" + userObj.getEmail() + "\", \"followers\" : [ " + followers + " ], \"following\" : [ " + followees + " ], \"id\" : " + userObj.getId() + ", \"isAnonymous\" : " + userObj.getIsAnonymous() + ", \"name\" : \"" + userObj.getName() + "\"" +
@@ -261,7 +262,7 @@ public class userController {
         String strLimit = "";
         String strSince = "";
 
-        if (since_id != null && max_id != null){
+        if (since_id != null && max_id != null) {
             strSince = " and Users.id >= " + since_id + " and Users.id <= " + max_id;
         }
 
@@ -290,12 +291,12 @@ public class userController {
                 userObj.setEmail(rs.getString(9));
                 String queryFollower = "select follower from Follows where followee = \"" + userObj.getEmail() + "\"";
                 rsFollower = con.createStatement().executeQuery(queryFollower);
-                while(rsFollower.next()){
+                while (rsFollower.next()) {
                     followers.add(rsFollower.getString(1));
                 }
                 String queryFollowee = "select followee from Follows where follower = \"" + userObj.getEmail() + "\"";
                 rsFollowee = con.createStatement().executeQuery(queryFollowee);
-                while(rsFollowee.next()){
+                while (rsFollowee.next()) {
                     followees.add(rsFollowee.getString(1));
                 }
                 response = response + "{\"about\": \"" + userObj.getAbout() + "\", \"email\": \"" + userObj.getEmail() + "\", \"followers\" : [ " + followers + " ], \"following\" : [ " + followees + " ], \"id\" : " + userObj.getId() + ", \"isAnonymous\" : " + userObj.getIsAnonymous() + ", \"name\" : \"" + userObj.getName() + "\"" +
@@ -317,5 +318,132 @@ public class userController {
         return ResponseEntity.ok(response);
     }
 
+    @RequestMapping(path = "/db/api/user/unfollow", method = RequestMethod.POST)
+    public ResponseEntity unfollowUser(@RequestBody FollowUser body) {
 
+        String query = "delete from Follows where follower = \"" + body.getFollower() + "\" and followee = \"" + body.getFollowee() + "\";";
+        String query1 = "select count(*) from Follows where followee = \"" + body.getFollower() + "\";";
+        String query2 = "select follower from Follows where followee = \"" + body.getFollower() + "\";";
+        String query3 = "select followee from Follows where follower = \"" + body.getFollower() + "\";";
+        String query4 = "select * from Users where email = \"" + body.getFollower() + "\";";
+
+        int subscriptions = 0;
+        ArrayList followers = new ArrayList();
+        ArrayList followees = new ArrayList();
+        CreateUser userObj = new CreateUser();
+
+        try {
+            con = DriverManager.getConnection(url, username, password);
+            stmt = con.createStatement();
+            stmt.executeUpdate(query);
+            stmt = con.createStatement();
+            rs = stmt.executeQuery(query1);
+            rs.next();
+            subscriptions = rs.getInt(1);
+            rs = con.createStatement().executeQuery(query2);
+            while (rs.next()) {
+                followers.add(rs.getString(1));
+            }
+            rs = con.createStatement().executeQuery(query3);
+            while (rs.next()) {
+                followees.add(rs.getString(1));
+            }
+            rs = con.createStatement().executeQuery(query4);
+            rs.next();
+            userObj.setId(rs.getInt(1));
+            userObj.setUsername(rs.getString(2));
+            userObj.setAbout(rs.getString(3));
+            userObj.setAnonymous(rs.getBoolean(4));
+            userObj.setName(rs.getString(5));
+            userObj.setEmail(rs.getString(6));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException se) { /*can't do anything */ }
+            try {
+                stmt.close();
+            } catch (SQLException se) { /*can't do anything */ }
+        }
+
+        String follower = "";
+        String followee = "";
+
+        for (Object i : followers) {
+            follower = follower + "\"" + i + "\", ";
+        }
+        for (Object i : followees) {
+            followee = followee + "\"" + i + "\", ";
+        }
+
+        String response = "{\"about\": \"" + userObj.getAbout() + "\", \"email\": \"" + userObj.getEmail() + "\", \"followers\" : [ " + follower + " ], \"following\" : [ " + followee + " ], \"id\" : " + userObj.getId() + ", \"isAnonymous\" : " + userObj.getIsAnonymous() + ", \"name\" : \"" + userObj.getName() + "\"" +
+                ", \"subscriptions\" : " + subscriptions + ", \"username\" : \"" + userObj.getUsername() + "\"}";
+
+        return ResponseEntity.ok(response);
+    }
+
+    @RequestMapping(path = "/db/api/user/updateProfile", method = RequestMethod.POST)
+    public ResponseEntity updateUser(@RequestBody UpdateUser body) {
+
+        String query = "update Users set about = \"" + body.getAbout() + "\", name = \"" + body.getName() + "\" where email = \"" + body.getUser() + "\";";
+        String query2 = "select follower from Follows where followee = \"" + body.getUser() + "\";";
+        String query3 = "select followee from Follows where follower = \"" + body.getUser() + "\";";
+        String query4 = "select * from Users where email = \"" + body.getUser() + "\";";
+
+        int subscriptions = 0;
+        ArrayList followers = new ArrayList();
+        ArrayList followees = new ArrayList();
+        CreateUser userObj = new CreateUser();
+
+        try {
+            con = DriverManager.getConnection(url, username, password);
+            stmt = con.createStatement();
+            stmt.executeUpdate(query);
+            stmt = con.createStatement();
+            //rs = stmt.executeQuery(query1);
+            //rs.next();
+            //subscriptions = rs.getInt(1);
+            rs = con.createStatement().executeQuery(query2);
+            while (rs.next()) {
+                followers.add(rs.getString(1));
+            }
+            rs = con.createStatement().executeQuery(query3);
+            while (rs.next()) {
+                followees.add(rs.getString(1));
+            }
+            rs = con.createStatement().executeQuery(query4);
+            rs.next();
+            userObj.setId(rs.getInt(1));
+            userObj.setUsername(rs.getString(2));
+            userObj.setAbout(rs.getString(3));
+            userObj.setAnonymous(rs.getBoolean(4));
+            userObj.setName(rs.getString(5));
+            userObj.setEmail(rs.getString(6));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                con.close();
+            } catch (SQLException se) { /*can't do anything */ }
+            try {
+                stmt.close();
+            } catch (SQLException se) { /*can't do anything */ }
+        }
+
+        String follower = "";
+        String followee = "";
+
+        for (Object i : followers) {
+            follower = follower + "\"" + i + "\", ";
+        }
+        for (Object i : followees) {
+            followee = followee + "\"" + i + "\", ";
+        }
+
+        String response = "{\"about\": \"" + userObj.getAbout() + "\", \"email\": \"" + userObj.getEmail() + "\", \"followers\" : [ " + follower + " ], \"following\" : [ " + followee + " ], \"id\" : " + userObj.getId() + ", \"isAnonymous\" : " + userObj.getIsAnonymous() + ", \"name\" : \"" + userObj.getName() + "\"" +
+                ", \"subscriptions\" : " + subscriptions + ", \"username\" : \"" + userObj.getUsername() + "\"}";
+
+        return ResponseEntity.ok(response);
+    }
 }
